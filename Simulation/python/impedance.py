@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Union
 import numpy as np
 import yaml
 import re
@@ -26,26 +26,41 @@ def readLimpMeasurement(fPath: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray
     return np.asarray(fLst), np.asarray(magLst), np.asarray(phiLst)
 
 
-def plotImpedance(freq: np.ndarray, mag: np.ndarray, phase: np.ndarray, labels: list=None) -> None:
-    fig, ax = plt.subplots(1, 2, sharex=True, figsize=(10, 5))
+def plotImpedance(freq: np.ndarray, mag: np.ndarray, phase: np.ndarray, labels: list=None, cfgPath: Union[Path, None]=None) -> None:
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8, 10))
     ax1 = ax[0]
     ax2 = ax[1]
 
     if len(mag.shape) == 2:
-        ax1.plot(freq, mag[0])
-        ax1.plot(freq, mag[1])
+        if labels is not None:
+            label1, label2 = labels
+        else:
+            label1 = label2 = None
+        ax1.plot(freq, mag[0], label=label1)
+        ax1.plot(freq, mag[1], label=label2)
 
-        ax2.plot(freq, phase[0])
-        ax2.plot(freq, phase[1])
+        ax2.plot(freq, phase[0], label=label1)
+        ax2.plot(freq, phase[1], label=label2)
     else:
-        ax1.plot(freq, mag)
-        ax1.plot(freq, phase)
+        ax1.plot(freq, mag, label=labels)
+        ax1.plot(freq, phase, label=labels)
     ax1.set_xlabel('Frequency [Hz]')
     ax1.set_ylabel('Impedance [Ohm]')
     ax1.set_xscale('log')
     ax2.set_xlabel('Frequency [Hz]')
     ax2.set_ylabel('Phase [deg]')
     ax2.set_xscale('log')
+
+    if labels is not None:
+        ax1.legend()
+        ax2.legend()
+
+    if cfgPath is not None:
+        figPath = Path('fig') / (str(cfgPath.stem) + '_impedance.png')
+    else:
+        figPath = Path('fig/impedance.png')
+    plt.tight_layout()
+    plt.savefig(figPath, dpi=300)
     plt.show(block=True)
 
 
@@ -85,7 +100,7 @@ def analyzeImpedance(cfgPath: Path) -> None:
     fMeas, impMeas, phiMeas = readLimpMeasurement(measPath)
     impSim, phiSim = calcImpedance(fMeas, cfg['circuit_info'])
 
-    plotImpedance(fMeas, np.vstack((impMeas, impSim)), np.vstack((phiMeas, phiSim)))
+    plotImpedance(fMeas, np.vstack((impMeas, impSim)), np.vstack((phiMeas, phiSim)), labels=['Meas.', 'Sim.'], cfgPath=cfgPath)
 
 
 if __name__ == '__main__':
