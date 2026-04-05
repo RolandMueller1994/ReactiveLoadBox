@@ -1,0 +1,14 @@
+circuit_info:
+  r_ser: 8
+  r_main: 75
+  c_main: 220.0e-6
+  l_main: 8.2e-3
+  l_main_r: 0.3
+  r_ramp1: 12
+  l_ramp1: 0.68e-3
+  l_ramp1_r: 0.1
+  r_ramp2: 68
+  l_ramp2: 0.33e-3
+  l_ramp2_r: 0.1
+meas_config:
+  path: ../../Measurement/fatcab_impedance.txt
