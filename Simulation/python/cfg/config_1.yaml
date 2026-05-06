@@ -13,5 +13,6 @@ circuit_info:
 drv_info:
   p_drv: 50
   r_drv: 8
+  r_int: 200
 meas_config:
   path: ../../Measurement/fatcab_impedance.txt

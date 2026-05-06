@@ -6,6 +6,8 @@ import re
 import matplotlib.pyplot as plt
 import math
 
+from prettytable import PrettyTable
+
 
 def readLimpMeasurement(fPath: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     pattern = re.compile(r'(\d+\.\d+)\s+(\d+\.\d+)\s+(-?\d+\.\d+)')
@@ -64,25 +66,24 @@ def plotImpedance(freq: np.ndarray, mag: np.ndarray, phase: np.ndarray, labels: 
     plt.show(block=True)
 
 
-def plotPower(p: list, cfgPath: Union[Path, None]=None):
+def plotPower(p: list, pInput, cfgPath: Union[Path, None]=None):
     if len(p) == 0:
         return
 
     fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 5))
-
+    fLst = [pPt['f'] for pPt in p]
     for key, label in [('p_ser', 'Main R'),
                        ('p_res_r', 'Resonance R'),
-                       ('p_res_c', 'Resonance C'),
-                       ('p_res_l', 'Resonance L'),
+                       #('p_res_c', 'Resonance C'),
+                       #('p_res_l', 'Resonance L'),
                        ('p_ramp_r', 'Ramp 1 R'),
-                       ('p_ramp_l', 'Ramp 1 L'),
+                       #('p_ramp_l', 'Ramp 1 L'),
                        ('p_ramp2_r', 'Ramp 2 R'),
-                       ('p_ramp2_l', 'Ramp 2 L'),
+                       #('p_ramp2_l', 'Ramp 2 L'),
                        ]:
         if key not in p[0]:
             continue
         pLst = [abs(pPt[key]) for pPt in p]
-        fLst = [pPt['f'] for pPt in p]
         ax.plot(fLst, pLst, label=label)
     ax.set_xscale('log')
     ax.set_xlabel('Frequency [Hz]')
@@ -96,9 +97,23 @@ def plotPower(p: list, cfgPath: Union[Path, None]=None):
     plt.savefig(figPath, dpi=300)
     plt.show()
 
+    pDb = [10 * math.log10(abs(pPt['p_total'])/pInput) for pPt in p]
+    fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 5))
+    ax.plot(fLst, pDb)
+    ax.set_xlabel('Frequency [Hz]')
+    ax.set_ylabel('Power [dB]')
+    ax.set_xscale('log')
+    plt.tight_layout()
+    if cfgPath is not None:
+        figPath = Path('fig') / (str(cfgPath.stem) + '_power_total.png')
+    else:
+        figPath = Path('fig/power_total.png')
+    plt.savefig(figPath, dpi=300)
+    plt.show()
+
 
 def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ramp1, l_ramp1_r, r_ramp2=None, l_ramp2=None,
-                    l_ramp2_r=None, v_i=None, r_drv=None) -> Tuple[float, float, Union[dict, None]]:
+                    l_ramp2_r=None, i_i=None, r_drv=None) -> Tuple[float, float, Union[dict, None]]:
     w = 2 * math.pi * freq
     w = w.item()
 
@@ -119,8 +134,8 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
 
     z = r_ser + z_main + z_ramp + z_ramp2
 
-    if v_i is not None:
-        i = v_i / (z + r_drv)
+    if i_i is not None:
+        i = i_i * r_drv / (r_drv + z)
         p_ser = i**2 * r_ser
 
         v_res = i * z_main
@@ -133,6 +148,7 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
         p_ramp_l = v_ramp**2 / z_l_ramp
 
         p_dict = {
+            'p_total': i**2*z,
             'p_ser': p_ser,
             'p_res_r': p_res_r,
             'p_res_c': p_res_c,
@@ -152,7 +168,6 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
     else:
         p_dict = None
 
-
     phi = math.atan2(z.imag, z.real)
     return abs(z), phi/math.pi * 180, p_dict
 
@@ -163,13 +178,14 @@ def calcImpedance(freq: np.ndarray, circuitInfo: dict, drv_info: dict) -> Tuple[
 
     if 'p_drv' in drv_info:
         r_drv = drv_info['r_drv']
-        v_i = math.sqrt(drv_info['p_drv'] * r_drv) * 2
+        v_i = math.sqrt(drv_info['p_drv'] * r_drv)
+        i_i = v_i / (1 / (1/r_drv + 1/drv_info['r_int']))
     else:
         r_drv = None
-        v_i = None
+        i_i = None
 
     for cnt, f in enumerate(freq):
-        magPt, phiPt, p_dict = calcImpedancePt(f, v_i=v_i, r_drv=r_drv,  **circuitInfo)
+        magPt, phiPt, p_dict = calcImpedancePt(f, i_i=i_i, r_drv=drv_info['r_int'],  **circuitInfo)
         mag[cnt] = magPt
         phi[cnt] = phiPt
         if p_dict is not None:
@@ -185,8 +201,44 @@ def analyzeImpedance(cfgPath: Path) -> None:
     fMeas, impMeas, phiMeas = readLimpMeasurement(measPath)
     impSim, phiSim, p = calcImpedance(fMeas, cfg['circuit_info'], cfg.get('drv_info', dict()))
 
+    rSim = np.abs(impSim)
+    rMeas = np.abs(impMeas)
+    for cnt, f in enumerate(fMeas):
+        if f > 300:
+            break
+
+    rMaxIdx = np.argmax(rSim[:cnt])
+    rMax = rSim[rMaxIdx]
+    fMax = fMeas[rMaxIdx]
+
+    rMaxMeasIdx = np.argmax(rMeas[:cnt])
+    rMaxMeas = rMeas[rMaxMeasIdx]
+    fMaxMeas = fMeas[rMaxMeasIdx]
+
+    table = PrettyTable(['Type', 'Value'])
+    table.add_divider()
+    table.add_row(['f Res. Meas.', f'{fMaxMeas:.2f}'])
+    table.add_row(['R Res. Meas.', f'{rMaxMeas:.2f}'])
+    table.add_divider()
+    table.add_row(['f Res. Sim.', f'{fMax:.2f}'])
+    table.add_row(['R Res. Sim.', f'{rMax:.2f}'])
+    table.add_divider()
+
+    pCfg = cfg.get('drv_info', None)
+    if pCfg is not None:
+        pTarget = pCfg['p_drv']
+        pTotal = np.asarray([10 * math.log10(abs(pPt['p_total']) / pTarget) for pPt in p])
+        pMaxIdx = np.argmax(pTotal[:cnt])
+        pMax = pTotal[pMaxIdx]
+        pMaxF = fMeas[pMaxIdx]
+        table.add_row(['f P Max', f'{pMaxF:.2f}'])
+        table.add_row(['P Max', f'{pMax:.2f}'])
+        table.add_divider()
+
+    print(table)
+
     plotImpedance(fMeas, np.vstack((impMeas, impSim)), np.vstack((phiMeas, phiSim)), labels=['Meas.', 'Sim.'], cfgPath=cfgPath)
-    plotPower(p, cfgPath=cfgPath)
+    plotPower(p, cfg.get('drv_info', {}).get('p_drv', None), cfgPath=cfgPath)
 
 
 if __name__ == '__main__':
