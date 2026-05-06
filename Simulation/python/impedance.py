@@ -114,7 +114,7 @@ def plotPower(p: list, pInput, cfgPath: Union[Path, None]=None):
 
 
 def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ramp1, l_ramp1_r, r_ramp2=None, l_ramp2=None,
-                    l_ramp2_r=None, i_i=None, r_drv=None) -> Tuple[float, float, Union[dict, None]]:
+                    l_ramp2_r=None, i_i=None, r_amp=None, r_drv=None, p_clip=None) -> Tuple[float, float, Union[dict, None]]:
     w = 2 * math.pi * freq
     w = w.item()
 
@@ -136,7 +136,12 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
     z = r_ser + z_main + z_ramp + z_ramp2
 
     if i_i is not None:
-        i = i_i * r_drv / (r_drv + z)
+        i = i_i * r_amp / (r_amp + z)
+        if p_clip is not None:
+            v_i_max = math.sqrt(p_clip * r_drv)
+            # i_max = abs(v_i_max / z)
+            i_max = math.sqrt(p_clip / z.real)
+            i = min(i.real, i_max)
         p_ser = abs(i)**2 * r_ser
 
         v_res = i * z_main
@@ -181,12 +186,14 @@ def calcImpedance(freq: np.ndarray, circuitInfo: dict, drv_info: dict) -> Tuple[
         r_drv = drv_info['r_drv']
         v_i = math.sqrt(drv_info['p_drv'] * r_drv)
         i_i = v_i / (1 / (1/r_drv + 1/drv_info['r_int']))
+        p_clip = drv_info.get('p_clip', None)
     else:
         r_drv = None
         i_i = None
+        p_clip = None
 
     for cnt, f in enumerate(freq):
-        magPt, phiPt, p_dict = calcImpedancePt(f, i_i=i_i, r_drv=drv_info['r_int'],  **circuitInfo)
+        magPt, phiPt, p_dict = calcImpedancePt(f, i_i=i_i, r_drv=r_drv, r_amp=drv_info['r_int'], p_clip=p_clip, **circuitInfo)
         mag[cnt] = magPt
         phi[cnt] = phiPt
         if p_dict is not None:

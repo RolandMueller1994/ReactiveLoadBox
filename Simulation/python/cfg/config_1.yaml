@@ -12,6 +12,7 @@ circuit_info:
   l_ramp2_r: 0.3
 drv_info:
   p_drv: 50
+  p_clip: 70
   r_drv: 8
   r_int: 200
 meas_config:
