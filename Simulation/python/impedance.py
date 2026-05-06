@@ -166,8 +166,8 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
 
         if r_ramp2 is not None:
             v_ramp2 = i * z_ramp2
-            p_ramp2_r = v_ramp2**2 / r_ramp2
-            p_ramp2_l = v_ramp2**2 / z_l_ramp2
+            p_ramp2_r = abs(v_ramp2)**2 / r_ramp2
+            p_ramp2_l = abs(v_ramp2)**2 / z_l_ramp2
             p_dict['p_ramp2_r'] = p_ramp2_r
             p_dict['p_ramp2_l'] = p_ramp2_l
 
