@@ -72,18 +72,19 @@ def plotPower(p: list, pInput, cfgPath: Union[Path, None]=None):
 
     fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 5))
     fLst = [pPt['f'] for pPt in p]
-    for key, label in [('p_ser', 'Main R'),
+    for key, label in [('p_total', 'Total'),
+                       ('p_ser', 'Main R'),
                        ('p_res_r', 'Resonance R'),
-                       #('p_res_c', 'Resonance C'),
-                       #('p_res_l', 'Resonance L'),
+                       ('p_res_c', 'Resonance C'),
+                       ('p_res_l', 'Resonance L'),
                        ('p_ramp_r', 'Ramp 1 R'),
-                       #('p_ramp_l', 'Ramp 1 L'),
+                       ('p_ramp_l', 'Ramp 1 L'),
                        ('p_ramp2_r', 'Ramp 2 R'),
-                       #('p_ramp2_l', 'Ramp 2 L'),
+                       ('p_ramp2_l', 'Ramp 2 L'),
                        ]:
         if key not in p[0]:
             continue
-        pLst = [abs(pPt[key]) for pPt in p]
+        pLst = [abs(pPt[key].real) for pPt in p]
         ax.plot(fLst, pLst, label=label)
     ax.set_xscale('log')
     ax.set_xlabel('Frequency [Hz]')
@@ -97,7 +98,7 @@ def plotPower(p: list, pInput, cfgPath: Union[Path, None]=None):
     plt.savefig(figPath, dpi=300)
     plt.show()
 
-    pDb = [10 * math.log10(abs(pPt['p_total'])/pInput) for pPt in p]
+    pDb = [10 * math.log10(abs(pPt['p_total'].real)/pInput) for pPt in p]
     fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 5))
     ax.plot(fLst, pDb)
     ax.set_xlabel('Frequency [Hz]')
@@ -136,16 +137,16 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
 
     if i_i is not None:
         i = i_i * r_drv / (r_drv + z)
-        p_ser = i**2 * r_ser
+        p_ser = abs(i)**2 * r_ser
 
         v_res = i * z_main
-        p_res_r = v_res**2 / r_main
-        p_res_c = v_res**2 / z_c_main
-        p_res_l = v_res**2 / z_l_main
+        p_res_r = abs(v_res)**2 / r_main
+        p_res_c = abs(v_res)**2 / z_c_main
+        p_res_l = abs(v_res)**2 / z_l_main
 
         v_ramp = i * z_ramp
-        p_ramp_r = v_ramp**2 / r_ramp1
-        p_ramp_l = v_ramp**2 / z_l_ramp
+        p_ramp_r = abs(v_ramp)**2 / r_ramp1
+        p_ramp_l = abs(v_ramp)**2 / z_l_ramp
 
         p_dict = {
             'p_total': i**2*z,
