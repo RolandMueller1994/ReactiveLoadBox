@@ -66,7 +66,7 @@ def plotImpedance(freq: np.ndarray, mag: np.ndarray, phase: np.ndarray, labels: 
     plt.show(block=True)
 
 
-def plotPower(p: list, pInput, cfgPath: Union[Path, None]=None):
+def plotPower(p: list, pInput, vInput, cfgPath: Union[Path, None]=None):
     if len(p) == 0:
         return
 
@@ -99,11 +99,18 @@ def plotPower(p: list, pInput, cfgPath: Union[Path, None]=None):
     plt.show()
 
     pDb = [10 * math.log10(abs(pPt['p_total'].real)/pInput) for pPt in p]
-    fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 5))
-    ax.plot(fLst, pDb)
-    ax.set_xlabel('Frequency [Hz]')
-    ax.set_ylabel('Power [dB]')
-    ax.set_xscale('log')
+    vDb = [20 * math.log10(abs(pPt['v'])/vInput) for pPt in p]
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8, 10))
+    ax1 = ax[0]
+    ax2 = ax[1]
+    ax1.plot(fLst, pDb)
+    ax1.set_xlabel('Frequency [Hz]')
+    ax1.set_ylabel('Power [dB]')
+    ax1.set_xscale('log')
+    ax2.plot(fLst, vDb)
+    ax2.set_xlabel('Frequency [Hz]')
+    ax2.set_ylabel('Output Level [dB]')
+    ax2.set_xscale('log')
     plt.tight_layout()
     if cfgPath is not None:
         figPath = Path('fig') / (str(cfgPath.stem) + '_power_total.png')
@@ -114,7 +121,7 @@ def plotPower(p: list, pInput, cfgPath: Union[Path, None]=None):
 
 
 def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ramp1, l_ramp1_r, r_ramp2=None, l_ramp2=None,
-                    l_ramp2_r=None, i_i=None, r_amp=None, r_drv=None, p_clip=None) -> Tuple[float, float, Union[dict, None]]:
+                    l_ramp2_r=None, r_amp=None, r_drv=None, p_drv=None) -> Tuple[float, float, Union[dict, None]]:
     w = 2 * math.pi * freq
     w = w.item()
 
@@ -135,13 +142,10 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
 
     z = r_ser + z_main + z_ramp + z_ramp2
 
-    if i_i is not None:
-        i = i_i * r_amp / (r_amp + z)
-        if p_clip is not None:
-            v_i_max = math.sqrt(p_clip * r_drv)
-            # i_max = abs(v_i_max / z)
-            i_max = math.sqrt(p_clip / z.real)
-            i = min(i.real, i_max)
+    if p_drv is not None:
+        v_amp = math.sqrt(p_drv * r_drv) * (r_drv + r_amp) / r_drv
+        i = v_amp / (r_amp + z)
+        v = i * z
         p_ser = abs(i)**2 * r_ser
 
         v_res = i * z_main
@@ -161,6 +165,7 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
             'p_res_l': p_res_l,
             'p_ramp_r': p_ramp_r,
             'p_ramp_l': p_ramp_l,
+            'v': v,
             'f': freq
         }
 
@@ -182,18 +187,12 @@ def calcImpedance(freq: np.ndarray, circuitInfo: dict, drv_info: dict) -> Tuple[
     phi = np.zeros_like(freq)
     p = []
 
-    if 'p_drv' in drv_info:
-        r_drv = drv_info['r_drv']
-        v_i = math.sqrt(drv_info['p_drv'] * r_drv)
-        i_i = v_i / (1 / (1/r_drv + 1/drv_info['r_int']))
-        p_clip = drv_info.get('p_clip', None)
-    else:
-        r_drv = None
-        i_i = None
-        p_clip = None
+    p_drv = drv_info.get('p_drv', None)
+    r_drv = drv_info.get('r_drv', None)
+    r_amp = drv_info.get('r_amp', None)
 
     for cnt, f in enumerate(freq):
-        magPt, phiPt, p_dict = calcImpedancePt(f, i_i=i_i, r_drv=r_drv, r_amp=drv_info['r_int'], p_clip=p_clip, **circuitInfo)
+        magPt, phiPt, p_dict = calcImpedancePt(f, r_drv=r_drv, r_amp=r_amp, p_drv = p_drv, **circuitInfo)
         mag[cnt] = magPt
         phi[cnt] = phiPt
         if p_dict is not None:
@@ -242,11 +241,15 @@ def analyzeImpedance(cfgPath: Path) -> None:
         table.add_row(['f P Max', f'{pMaxF:.2f}'])
         table.add_row(['P Max', f'{pMax:.2f}'])
         table.add_divider()
+        v_i = math.sqrt(pTarget * pCfg['r_drv'])
+        rDrv = pCfg['r_drv']
+        rAmp = pCfg['r_amp']
+        plotPower(p, cfg.get('drv_info', {}).get('p_drv', None), v_i, cfgPath=cfgPath)
 
     print(table)
 
     plotImpedance(fMeas, np.vstack((impMeas, impSim)), np.vstack((phiMeas, phiSim)), labels=['Meas.', 'Sim.'], cfgPath=cfgPath)
-    plotPower(p, cfg.get('drv_info', {}).get('p_drv', None), cfgPath=cfgPath)
+
 
 
 if __name__ == '__main__':
