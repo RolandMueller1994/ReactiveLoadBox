@@ -11,7 +11,7 @@ circuit_info:
   l_ramp2: 0.33e-3
   l_ramp2_r: 0.3
 drv_info:
-  p_drv: 100
+  p_drv: 50
   r_drv: 8
   r_amp: 8
 meas_config:
