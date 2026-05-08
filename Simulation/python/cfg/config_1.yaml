@@ -1,5 +1,5 @@
 circuit_info:
-  r_ser: 8
+  r_ser: 7.5
   r_main: 68
   c_main: 220.0e-6
   l_main: 8.2e-3

@@ -28,6 +28,29 @@ def readLimpMeasurement(fPath: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray
     return np.asarray(fLst), np.asarray(magLst), np.asarray(phiLst)
 
 
+def calcPowerMeas(r_drv, r_amp, pOut, imp, phi, f):
+
+    cmpImp = []
+
+    for impPt, phiPt,fPt in zip(imp, phi, f):
+        real = impPt * math.cos(phiPt/180 * math.pi)
+        imag = impPt * math.sin(phiPt/180 * math.pi)
+        cmpImp.append(real + imag * 1j)
+
+    vOut = math.sqrt(pOut * r_drv)
+    vAmp = vOut * (r_amp + r_drv) / r_drv
+
+    p = []
+    v = []
+    for z in cmpImp:
+        i = vAmp / (r_amp + z)
+        p.append(abs(i)**2 * z)
+        v.append(i*z)
+    pDb = [10 * math.log10(pPt.real/pOut) for pPt in p]
+    vDb = [20 * math.log10(abs(vPt)/vOut) for vPt in v]
+    return p, pDb, v, vDb
+
+
 def plotImpedance(freq: np.ndarray, mag: np.ndarray, phase: np.ndarray, labels: list=None, cfgPath: Union[Path, None]=None) -> None:
     fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8, 10))
     ax1 = ax[0]
@@ -66,7 +89,7 @@ def plotImpedance(freq: np.ndarray, mag: np.ndarray, phase: np.ndarray, labels: 
     plt.show(block=True)
 
 
-def plotPower(p: list, pInput, vInput, cfgPath: Union[Path, None]=None):
+def plotPower(p: list, pInput, vInput, measChar, cfgPath: Union[Path, None]=None):
     if len(p) == 0:
         return
 
@@ -103,14 +126,18 @@ def plotPower(p: list, pInput, vInput, cfgPath: Union[Path, None]=None):
     fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8, 10))
     ax1 = ax[0]
     ax2 = ax[1]
-    ax1.plot(fLst, pDb)
+    ax1.plot(fLst, pDb, label='Sim.')
+    ax1.plot(fLst, measChar[1], label='Meas.')
     ax1.set_xlabel('Frequency [Hz]')
     ax1.set_ylabel('Power [dB]')
     ax1.set_xscale('log')
-    ax2.plot(fLst, vDb)
+    ax1.legend()
+    ax2.plot(fLst, vDb, label='Sim.')
+    ax2.plot(fLst, measChar[3], label='Meas.')
     ax2.set_xlabel('Frequency [Hz]')
     ax2.set_ylabel('Output Level [dB]')
     ax2.set_xscale('log')
+    ax2.legend()
     plt.tight_layout()
     if cfgPath is not None:
         figPath = Path('fig') / (str(cfgPath.stem) + '_power_total.png')
@@ -158,7 +185,7 @@ def calcImpedancePt(freq, r_ser, r_main, c_main, l_main, l_main_r, r_ramp1, l_ra
         p_ramp_l = abs(v_ramp)**2 / z_l_ramp
 
         p_dict = {
-            'p_total': i**2*z,
+            'p_total': abs(i)**2*z,
             'p_ser': p_ser,
             'p_res_r': p_res_r,
             'p_res_c': p_res_c,
@@ -244,7 +271,8 @@ def analyzeImpedance(cfgPath: Path) -> None:
         v_i = math.sqrt(pTarget * pCfg['r_drv'])
         rDrv = pCfg['r_drv']
         rAmp = pCfg['r_amp']
-        plotPower(p, cfg.get('drv_info', {}).get('p_drv', None), v_i, cfgPath=cfgPath)
+        measChar = calcPowerMeas(rDrv, rAmp, pTarget, impMeas, phiMeas, fMeas)
+        plotPower(p, cfg.get('drv_info', {}).get('p_drv', None), v_i, measChar, cfgPath=cfgPath)
 
     print(table)
 
