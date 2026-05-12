@@ -1,0 +1,127 @@
+(footprint "DR56_8m2_095"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -30 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "7f20d2a1-5c24-44b6-bf95-ecfa7968d7f5")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "DR56_8m2_095"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "12ca7f25-c539-4e11-93df-1b2174aef4e7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "b3008961-996d-4be4-8b27-4006c972c1d1")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5c5f1a4d-6055-42b4-8cb2-d0c6ffa0a512")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_circle
+		(center 0 0)
+		(end 28.5 0)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "3ea9e54a-a06b-4d9a-be8d-27c1d1f20a24")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 28 0)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "b12f991e-b7ab-45ea-a1a7-85b0044f9211")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "91021226-ae2d-41bd-8983-a76c79381390")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "" np_thru_hole circle
+		(at 0 0)
+		(size 2.54 2.54)
+		(drill 5)
+		(layers)
+		(uuid "51d005ca-5d3f-40f1-8bf0-34b6ed34d8a2")
+	)
+	(pad "1" thru_hole circle
+		(at 29.5 0)
+		(size 2.5 2.5)
+		(drill 1.2)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "995ac45a-88be-4b3c-9780-8b5fc42a98e7")
+	)
+	(pad "2" thru_hole circle
+		(at -29.5 0)
+		(size 2.5 2.5)
+		(drill 1.2)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "795dab19-3211-4b8f-9c84-a6185b2fb0eb")
+	)
+	(embedded_fonts no)
+	(model "../LoadboxComponents.3dshapes/DR56_8_2_095-Part.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

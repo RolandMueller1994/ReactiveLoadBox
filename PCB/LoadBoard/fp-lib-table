@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "LoadboxComponents") (type "KiCad") (uri "/home/roland/Projects/ReactiveLoadBox/PCB/LoadboxComponents.pretty") (options "") (descr ""))
+)

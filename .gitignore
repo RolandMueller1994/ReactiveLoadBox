@@ -1,3 +1,9 @@
+# PCB
+*.FCBak
+PCB/LoadBoard/.history
+PCB/LoadBoard/LoadBoard-backups/*
+*.lck
+
 # Conda env
 Simulation/python/conda_env
 *.idea*
