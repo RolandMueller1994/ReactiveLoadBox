@@ -3,6 +3,7 @@
 PCB/LoadBoard/.history
 PCB/LoadBoard/LoadBoard-backups/*
 *.lck
+*_autosave-*
 
 # Conda env
 Simulation/python/conda_env
