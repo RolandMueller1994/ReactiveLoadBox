@@ -7,7 +7,7 @@
 		(at 0 -8.5 0)
 		(unlocked yes)
 		(layer "F.SilkS")
-		(uuid "96f7b5a8-b63e-4cad-8acf-0df2884ac645")
+		(uuid "39d6096e-ca73-4532-a7b1-1a596a9f1929")
 		(effects
 			(font
 				(size 1 1)
@@ -19,7 +19,7 @@
 		(at 0 1 0)
 		(unlocked yes)
 		(layer "F.Fab")
-		(uuid "f92f02df-ed19-4907-9743-1313ae66697b")
+		(uuid "a5965bf3-8bd3-412c-b445-06651e0bb187")
 		(effects
 			(font
 				(size 1 1)
@@ -32,7 +32,7 @@
 		(unlocked yes)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "6fce2639-d8e3-4add-ace6-60b64c99cda9")
+		(uuid "9c94ca0f-a8eb-4cfc-b8ec-af959f5c6482")
 		(effects
 			(font
 				(size 1 1)
@@ -45,7 +45,7 @@
 		(unlocked yes)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "ffe87e82-d2fc-461c-bec0-7d840389e581")
+		(uuid "5a06cc51-643a-482b-8867-6436c26ecbde")
 		(effects
 			(font
 				(size 1 1)
@@ -53,7 +53,7 @@
 			)
 		)
 	)
-	(attr smd)
+	(attr through_hole)
 	(duplicate_pad_numbers_are_jumpers no)
 	(fp_rect
 		(start -18 -7.5)
@@ -64,7 +64,7 @@
 		)
 		(fill no)
 		(layer "F.SilkS")
-		(uuid "5eb73477-e56c-43f0-966f-62a9ae0bb2ba")
+		(uuid "3210cd0e-0011-400d-9a7c-29a8bb27cd23")
 	)
 	(fp_rect
 		(start -17.5 -7)
@@ -75,13 +75,13 @@
 		)
 		(fill no)
 		(layer "F.CrtYd")
-		(uuid "ec010e2e-7e7e-427a-9fa2-4904d3728eee")
+		(uuid "781b3e1b-136e-4669-ba77-a3f2a4435f72")
 	)
 	(fp_text user "${REFERENCE}"
 		(at 0 2.5 0)
 		(unlocked yes)
 		(layer "F.Fab")
-		(uuid "7cf381be-c05d-4a46-ba3d-f2d903c4c285")
+		(uuid "8574679a-1064-485c-8039-51bc4937960b")
 		(effects
 			(font
 				(size 1 1)
@@ -95,7 +95,7 @@
 		(drill 1.2)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "7cd79745-cdb1-4b53-8b7e-bffc1c874b2b")
+		(uuid "d1280bc5-b864-4ff6-928b-0b33d5099e54")
 	)
 	(pad "2" thru_hole circle
 		(at 21 0)
@@ -103,7 +103,7 @@
 		(drill 1.2)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "e5c09a6b-1dd6-4bf0-9233-44b9c82ad6ef")
+		(uuid "287e734d-dc6c-4653-8ef1-302ee96c9f5a")
 	)
 	(embedded_fonts no)
 	(model "../LoadboxComponents.3dshapes/ERA_68_100_1-Part.step"
